@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Huy's Nexus | Stable Core</title>
+    <title>Huy's Nexus | Story Mode</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,12 +33,13 @@
             color: var(--text-light); 
             overflow: hidden; 
             height: 100vh;
+            user-select: none;
         }
 
         /* --- 2. HEADER & TABS --- */
         .edge-chrome {
             height: 50px; background: #1e1e2e; display: flex; align-items: center;
-            padding: 0 10px; border-bottom: 1px solid #333; position: fixed; top: 0; width: 100%; z-index: 1000; user-select: none;
+            padding: 0 10px; border-bottom: 1px solid #333; position: fixed; top: 0; width: 100%; z-index: 1000;
         }
         .tab-list { display: flex; gap: 6px; flex: 1; overflow-x: auto; align-items: center; height: 100%; padding-top: 6px; scroll-behavior: smooth; }
         .tab-list::-webkit-scrollbar { height: 0; }
@@ -73,52 +74,54 @@
         .f-action.a-btn:hover { background: var(--accent-primary); color: #000; border-color: transparent; }
         .f-action.da-btn:hover { background: var(--accent-secondary); color: #fff; border-color: transparent; }
 
-        /* --- 4. VIEWPORT --- */
+        /* --- 4. IMPORT MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+            z-index: 10000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; pointer-events: none;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; pointer-events: all; }
+        .modal-box { background: #1a1a2e; width: 500px; padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 60px rgba(0,0,0,0.5); transform: scale(0.9); transition: transform 0.3s; color: #fff; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        .modal-header { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; margin-bottom: 20px; color: white; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .toggle-label { color: #ccc; font-size: 0.95rem; font-weight: 500; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        .upload-grid { display: flex; gap: 15px; margin-bottom: 25px; }
+        .upload-zone { flex: 1; height: 140px; border: 2px dashed rgba(255,255,255,0.2); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: #888; font-size: 0.8rem; text-align: center; position: relative; overflow: hidden; background: rgba(255,255,255,0.02); }
+        .upload-zone:hover { border-color: var(--accent-primary); color: var(--accent-primary); background: rgba(76, 201, 240, 0.05); }
+        .upload-zone.disabled { opacity: 0.3; pointer-events: none; background: #111; border-color: #333; }
+        .preview-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; border-radius: 10px;}
+        .modal-actions { display: flex; gap: 15px; }
+        .btn-modal { flex: 1; padding: 15px; border-radius: 12px; border: none; cursor: pointer; font-weight: 700; transition: 0.2s; font-family: 'Manrope', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-cancel { background: rgba(255,255,255,0.1); color: #ccc; }
+        .btn-cancel:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        .btn-confirm { background: linear-gradient(135deg, var(--accent-primary), #4361ee); color: #fff; }
+
+        /* --- 5. VIEWPORT --- */
         .viewport { margin-top: 50px; height: calc(100vh - 50px); position: relative; background: #000; }
-        .view-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; background: var(--doc-bg); color: var(--doc-text); }
+        .view-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; background: var(--doc-bg); color: var(--doc-text); }
         .view-panel.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
 
-        /* --- 5. DASHBOARD --- */
-        #home-view {
-            background: linear-gradient(rgba(10,11,30,0.92), rgba(10,11,30,0.96)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover; color: white; overflow: hidden;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 5vh; 
-        }
+        #home-view { background: linear-gradient(rgba(10,11,30,0.92), rgba(10,11,30,0.96)), url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center fixed; background-size: cover; color: white; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 5vh; }
         .home-content { width: 100%; display: flex; flex-direction: column; align-items: center; position: relative; }
-        
-        .logo {
-            font-family: 'Space Grotesk', sans-serif; font-size: 5.5rem; font-weight: 700;
-            background: linear-gradient(to right, #fff, #4cc9f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 50px; letter-spacing: -3px; text-align: center; text-transform: lowercase;
-            filter: drop-shadow(0 0 20px rgba(76, 201, 240, 0.2));
-        }
-
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 5.5rem; font-weight: 700; background: linear-gradient(to right, #fff, #4cc9f0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 50px; letter-spacing: -3px; text-align: center; text-transform: lowercase; filter: drop-shadow(0 0 20px rgba(76, 201, 240, 0.2)); }
         .search-area { position: relative; width: 50%; margin-bottom: 70px; display: flex; flex-direction: column; align-items: center; }
-
-        .search-box {
-            width: 100%; padding: 20px 30px;
-            background: rgba(255,255,255,0.03); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 2px;
-            color: white; font-size: 1.2rem; outline: none; transition: 0.3s; text-align: center;
-            font-family: 'Space Grotesk', sans-serif; letter-spacing: 2px; text-transform: uppercase;
-        }
+        .search-box { width: 100%; padding: 20px 30px; background: rgba(255,255,255,0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 2px; color: white; font-size: 1.2rem; outline: none; transition: 0.3s; text-align: center; font-family: 'Space Grotesk', sans-serif; letter-spacing: 2px; text-transform: uppercase; }
         .search-box:focus { background: rgba(255,255,255,0.08); border-color: var(--accent-primary); box-shadow: 0 0 30px rgba(76, 201, 240, 0.1); }
-        .search-box::placeholder { color: rgba(255,255,255,0.3); letter-spacing: 1px;}
-
+        
         /* SEARCH CANVAS */
-        #searchCanvas {
-            position: absolute; top: 100%; left: 0; width: 100%;
-            max-height: 0; opacity: 0;
-            background: rgba(10, 11, 30, 0.95); backdrop-filter: blur(30px);
-            border: 1px solid rgba(255,255,255,0.1); border-top: none;
-            overflow-y: auto; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 999; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
+        #searchCanvas { position: absolute; top: 100%; left: 0; width: 100%; max-height: 0; opacity: 0; background: rgba(10, 11, 30, 0.95); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); border-top: none; overflow-y: auto; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); z-index: 999; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         #searchCanvas.active { max-height: 400px; opacity: 1; margin-top: 10px; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
         #searchCanvas::-webkit-scrollbar { width: 6px; }
         #searchCanvas::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-
         .search-result-item { padding: 20px 30px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; text-align: left; }
         .search-result-item:hover { background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent-primary); }
         .res-location { font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
@@ -128,87 +131,65 @@
 
         /* GRID */
         .tile-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 25px; padding: 0; width: 100%; max-width: 1000px; }
-        .tile {
-            aspect-ratio: 1.8; background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255,255,255,0.08); border-radius: 4px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.5s; padding: 10px; text-align: center; position: relative; overflow: hidden;
-        }
+        .tile { aspect-ratio: 1.8; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.5s; padding: 10px; text-align: center; position: relative; overflow: hidden; }
         .tile::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(120deg, transparent, rgba(255,255,255,0.05), transparent); transform: translateX(-100%); transition: 0.6s; }
         .tile:hover { background: rgba(255, 255, 255, 0.06); transform: translateY(-5px); border-color: rgba(255,255,255,0.4); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
         .tile:hover::before { transform: translateX(100%); }
         .tile-title { font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 600; color: #777; text-transform: uppercase; letter-spacing: 1.5px; transition: 0.4s; }
         .tile:hover .tile-title { color: #fff; letter-spacing: 3px; text-shadow: 0 0 15px rgba(255,255,255,0.6); }
+        .tile.plus-tile { border: 2px dashed rgba(255,255,255,0.15); }
+        .tile.plus-tile:hover { border-color: var(--accent-primary); background: rgba(76, 201, 240, 0.05); }
+        .plus-icon { font-size: 3rem; color: rgba(255,255,255,0.3); transition: 0.3s; font-weight: 200; }
+        .tile.plus-tile:hover .plus-icon { color: #fff; transform: scale(1.2) rotate(90deg); }
+        .morph-ghost { position: fixed; z-index: 9999; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--accent-primary); border-radius: 4px; pointer-events: none; transform-origin: center; transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; justify-content: center; overflow: hidden; }
 
-        .morph-ghost {
-            position: fixed; z-index: 9999;
-            background: rgba(255, 255, 255, 0.1); border: 1px solid var(--accent-primary);
-            border-radius: 4px; pointer-events: none; transform-origin: center;
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; align-items: center; justify-content: center; overflow: hidden;
-        }
-
-        /* --- 6. DOCUMENT CONTENT --- */
-        .doc-layout { max-width: 900px; margin: 0 auto; padding: 60px 40px; background: #fff; min-height: 100%; }
-        .doc-header { text-align: center; border-bottom: 2px solid var(--doc-accent); padding-bottom: 30px; margin-bottom: 40px; }
-        .doc-title { font-family: 'Playfair Display', serif; font-size: 2.8rem; color: #111; margin-bottom: 10px; line-height: 1.2; }
-        .doc-meta { font-family: 'Space Grotesk', sans-serif; color: #888; letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem; }
-        
-        /* IMAGE STYLES - STABLE LOADING */
-        .doc-image { 
-            width: 100%; height: 350px; object-fit: cover; border-radius: 4px; margin-bottom: 40px; filter: sepia(0.1); 
-            background: #eee; /* Placeholder color while loading */
-        }
-        
-        .doc-content { font-size: 1.15rem; line-height: 1.8; color: #333; text-align: justify; }
-        .doc-content h2 { font-family: 'Playfair Display', serif; margin-top: 35px; margin-bottom: 15px; color: #000; font-size: 1.8rem; border-left: 4px solid var(--accent-primary); padding-left: 15px; }
-        .doc-content h3 { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 1.3rem; margin-top: 25px; color: #444; }
-        .doc-content ul { list-style-type: none; padding-left: 0; margin-bottom: 25px; }
-        .doc-content ul li { padding-left: 20px; position: relative; margin-bottom: 12px; }
-        .doc-content ul li::before { content: "•"; color: var(--accent-secondary); font-weight: bold; position: absolute; left: 0; }
-        .doc-highlight { background: #fdf6e3; padding: 25px; border-left: 5px solid #d33682; margin: 30px 0; font-style: italic; color: #555; }
+        /* --- 6. COMPACT SPLIT LAYOUT --- */
+        .doc-layout { display: flex; width: 100%; height: 100%; overflow: hidden; background: #fff; }
+        .doc-visual { flex: 0 0 40%; height: 100%; position: relative; overflow: hidden; border-right: 1px solid #eee; }
+        .doc-image { width: 100%; height: 100%; object-fit: cover; filter: sepia(0.1) brightness(0.95); transition: 0.5s; }
+        .doc-visual:hover .doc-image { transform: scale(1.05); }
+        .doc-content-box { flex: 1; padding: 50px 60px; display: flex; flex-direction: column; justify-content: center; overflow-y: auto; }
+        .doc-content-box::-webkit-scrollbar { width: 0; }
+        .doc-header { margin-bottom: 30px; border-bottom: 2px solid var(--doc-accent); padding-bottom: 15px; display: inline-block; }
+        .doc-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: #111; margin: 0; line-height: 1.1; }
+        .doc-body { font-size: 1.05rem; line-height: 1.6; color: #333; }
+        .doc-body h2 { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 1.2rem; margin-top: 20px; margin-bottom: 10px; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 1px; }
+        .doc-body ul { list-style: none; padding: 0; margin-bottom: 20px; }
+        .doc-body ul li { padding-left: 15px; position: relative; margin-bottom: 8px; }
+        .doc-body ul li::before { content: "•"; color: var(--doc-accent); font-weight: bold; position: absolute; left: 0; }
+        .doc-highlight { background: #f8f9fa; padding: 15px; border-left: 4px solid #f72585; margin-top: 20px; font-style: italic; color: #555; font-size: 0.95rem; }
+        .doc-layout.no-image .doc-visual { display: none; }
+        .doc-layout.no-image .doc-content-box { padding: 60px 100px; }
+        .doc-layout.no-image .doc-title { font-size: 3.5rem; }
 
         /* --- 7. CHATBOX UI --- */
-        .chat-widget { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
-        .chat-btn { width: 70px; height: 70px; border-radius: 50%; background: white; border: 3px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.3s; }
-        .chat-btn:hover { transform: scale(1.1); }
-        .chat-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-        
-        .chat-window { 
-            position: absolute; bottom: 90px; right: 0; width: 380px; height: 600px; 
-            background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
-            display: flex; flex-direction: column; transform: scale(0); transform-origin: bottom right; 
-            transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); opacity: 0; pointer-events: none; 
-        }
+        .chat-widget { position: fixed; bottom: 30px; right: 30px; z-index: 9999; touch-action: none; }
+        .chat-btn { width: 70px; height: 70px; border-radius: 50%; background: white; border: 3px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.2); cursor: grab; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; }
+        .chat-btn:active { cursor: grabbing; transform: scale(0.95); }
+        .chat-btn img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; pointer-events: none; }
+        .chat-window { position: absolute; width: 380px; height: 600px; background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); display: flex; flex-direction: column; transform: scale(0); transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s; opacity: 0; pointer-events: none; }
         .chat-window.open { transform: scale(1); opacity: 1; pointer-events: all; }
-        
-        .chat-header { background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; padding: 20px; display: flex; align-items: center; gap: 15px; }
-        .chat-body { flex: 1; padding: 20px; background: #f9fafb; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        
+        .chat-header { background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; padding: 20px; display: flex; align-items: center; gap: 15px; cursor: default; }
+        .chat-body { flex: 1; padding: 20px; background: #f9fafb; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; cursor: default; }
         .msg { max-width: 80%; padding: 12px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.5; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
-        
         .msg.bot { background: white; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: #333; }
         .msg.bot a { color: #2563eb; font-weight: 700; text-decoration: none; border-bottom: 2px solid rgba(37, 99, 235, 0.2); transition: 0.2s; }
         .msg.bot a:hover { color: #f72585; border-color: #f72585; }
-
         .msg.user { background: #4f46e5; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        
-        .chat-footer { padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        .chat-footer { padding: 15px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; cursor: default; }
         .chat-input { flex: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
         .chat-input:focus { border-color: #4f46e5; }
-
         .typing-indicator { display: none; gap: 4px; padding: 12px 16px; background: white; width: fit-content; border-radius: 16px; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .dot { width: 6px; height: 6px; background: #bbb; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
         .dot:nth-child(1) { animation-delay: -0.32s; }
         .dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-
         .suggestions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
         .chip { background: #e0e7ff; color: #4338ca; padding: 6px 12px; border-radius: 15px; font-size: 0.85rem; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
         .chip:hover { background: #c7d2fe; border-color: #4338ca; }
 
-        #fileInput { display: none; }
+        #fileUploadInput, #imageUploadInput { display: none; }
     </style>
 </head>
 <body>
@@ -219,287 +200,210 @@
                 <span>🏠 Home</span>
             </div>
         </div>
-        <div class="add-btn" onclick="triggerImport()">+</div>
+        <div class="add-btn" onclick="openImportModal()">+</div>
     </div>
 
     <div class="floating-bar" id="floatingBar"></div>
 
-    <input type="file" id="fileInput" accept=".html,.txt,.docx" onchange="processFile(this)">
+    <div class="modal-overlay" id="importModal">
+        <div class="modal-box">
+            <h2 class="modal-header">TẠO TAB MỚI</h2>
+            <div class="toggle-row">
+                <span class="toggle-label">Hiển thị ảnh bìa (Banner)</span>
+                <label class="switch"><input type="checkbox" id="imgToggle" checked onchange="toggleImageUpload(this)"><span class="slider"></span></label>
+            </div>
+            <div class="upload-grid">
+                <div class="upload-zone" id="imgZone" onclick="document.getElementById('imageUploadInput').click()">
+                    <div class="upload-icon">🖼️</div><div>Chọn Ảnh</div><img id="previewImg" class="preview-img" style="display:none;"><input type="file" id="imageUploadInput" accept="image/*" onchange="handleImageSelect(this)">
+                </div>
+                <div class="upload-zone" onclick="document.getElementById('fileUploadInput').click()">
+                    <div class="upload-icon">📄</div><div>Chọn Tài Liệu</div><div id="fileNameDisplay" class="file-name"></div><input type="file" id="fileUploadInput" accept=".html,.txt,.docx" onchange="handleDocSelect(this)">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeImportModal()">Hủy</button>
+                <button class="btn-modal btn-confirm" onclick="confirmImport()">Tạo Tab</button>
+            </div>
+        </div>
+    </div>
 
     <div class="viewport" id="viewport">
         <div id="home-view" class="view-panel active">
             <div class="home-content">
                 <div class="logo">huy's nexus</div>
-                
                 <div class="search-area">
                     <input type="text" class="search-box" id="searchBox" placeholder="ENTER KEYWORD TO ACCESS..." onkeyup="handleSearchInput(event)">
                     <div id="searchCanvas"></div>
                 </div>
-
                 <div class="tile-grid" id="tileGrid"></div>
             </div>
         </div>
     </div>
 
-    <div class="chat-widget">
+    <div class="chat-widget" id="draggableChat">
         <div class="chat-window" id="chatWindow">
             <div class="chat-header">
                 <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" style="width:40px;border-radius:50%">
                 <div><h4 style="margin:0">Huy's Assistant</h4><small>Sẵn sàng hỗ trợ</small></div>
             </div>
             <div class="chat-body" id="chatBody">
-                <div class="typing-indicator" id="typingIndicator">
-                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                </div>
+                <div class="typing-indicator" id="typingIndicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
             </div>
             <div class="chat-footer">
                 <input type="text" class="chat-input" id="chatInput" placeholder="Nhập câu hỏi..." onkeypress="if(event.key==='Enter') sendMsg()">
                 <div onclick="sendMsg()" style="cursor:pointer;color:blue;font-size:1.2rem;">➤</div>
             </div>
         </div>
-        <div class="chat-btn" onclick="toggleChat()">
-            <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png">
-        </div>
+        <div class="chat-btn" id="chatBtn"><img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png"></div>
     </div>
 
     <script>
-        /* --- DỮ LIỆU HÌNH ẢNH ỔN ĐỊNH --- */
-        const topics = [
-            { id: 1, title: "Chatbot & GenAI", img: "https://images.unsplash.com/photo-1531746790731-6c087fecd65a?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Cách mạng hóa dịch vụ khách hàng</h2><p>Chatbot AI thế hệ mới...</p>` },
-            { id: 2, title: "Fraud Detection", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Cuộc chiến chống gian lận</h2><p>AI phát hiện bất thường...</p>` },
-            { id: 3, title: "Personal Finance", img: "https://images.unsplash.com/photo-1579621970563-ebec7560eb3e?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Quản lý tài chính cá nhân</h2><p>PFM tự động phân loại...</p>` },
-            { id: 4, title: "Voice Banking", img: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Giao dịch không chạm</h2><p>Sinh trắc học giọng nói...</p>` },
-            { id: 5, title: "AI Credit Scoring", img: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Chấm điểm tín dụng</h2><p>Dữ liệu thay thế...</p>` },
-            { id: 6, title: "eKYC & Identity", img: "https://images.unsplash.com/photo-1555421689-d68471e189f2?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Định danh điện tử</h2><p>Liveness Detection...</p>` },
-            { id: 7, title: "Cashflow Forecast", img: "https://images.unsplash.com/photo-1543286386-713df548e9cc?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Dự báo dòng tiền</h2><p>Cảnh báo thanh khoản...</p>` },
-            { id: 8, title: "Robo-Advisors", img: "https://images.unsplash.com/photo-1611974765270-ca12586343bb?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Cố vấn đầu tư</h2><p>Tái cân bằng tự động...</p>` },
-            { id: 9, title: "Sentiment Analysis", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Lắng nghe xã hội</h2><p>Phân tích cảm xúc...</p>` },
-            { id: 10, title: "RPA & Automation", img: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1000&q=80", content: `<h2>1. Siêu tự động hóa</h2><p>Robot Back-office...</p>` }
+        /* --- STORYTELLING DATA - REWRITTEN & UPGRADED IMAGES --- */
+        let topics = [
+            { id: 1, title: "1. BỐI CẢNH", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1000&q=80", content: `<h2>Kỷ Nguyên Số Hóa</h2><p>Khách hàng ngày nay mong đợi dịch vụ tài chính "mọi lúc, mọi nơi". Các chi nhánh vật lý dần nhường chỗ cho nền tảng số.</p><h2>Thách Thức</h2><ul><li>Khối lượng giao dịch khổng lồ 24/7.</li><li>Nhu cầu hỗ trợ tức thì (Instant Gratification).</li><li>Áp lực về bảo mật dữ liệu.</li></ul>` },
+            { id: 2, title: "2. VAI TRÒ AI", img: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1000&q=80", content: `<h2>Bộ Não Của Ngân Hàng</h2><p>AI không chỉ là công cụ, nó là nền tảng vận hành của ngân hàng số hiện đại. AI hiện diện trong mọi điểm chạm khách hàng.</p><h2>Trụ Cột Chính</h2><ul><li>Machine Learning: Dự báo rủi ro.</li><li>NLP: Hiểu ngôn ngữ con người.</li><li>Computer Vision: Xác thực hình ảnh eKYC.</li></ul>` },
+            { id: 3, title: "3. CHATBOT GENAI", img: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1000&q=80", content: `<h2>Siêu Trợ Lý Ảo</h2><p>Generative AI cho phép Chatbot tự tạo câu trả lời tự nhiên thay vì dùng kịch bản cứng nhắc.</p><h2>Năng Lực Mới</h2><ul><li>Thấu cảm với cảm xúc khách hàng.</li><li>Ghi nhớ ngữ cảnh hội thoại dài.</li><li>Giải quyết vấn đề phức tạp không cần con người.</li></ul>` },
+            { id: 4, title: "4. CÔNG NGHỆ NLP", img: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=1000&q=80", content: `<h2>Xử Lý Ngôn Ngữ Tự Nhiên</h2><p>NLP là cầu nối giúp máy tính "đọc hiểu" ý định (Intent) của con người qua văn bản hoặc giọng nói.</p><h2>Ứng Dụng</h2><ul><li>Phân tích ý định: Muốn chuyển tiền hay khiếu nại?</li><li>Trích xuất thông tin: Số tiền, tên người nhận.</li><li>Voice Banking: Ra lệnh bằng giọng nói.</li></ul>` },
+            { id: 5, title: "5. BẢO MẬT & EKYC", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1000&q=80", content: `<h2>Định Danh Điện Tử</h2><p>eKYC cho phép mở tài khoản 100% online an toàn tuyệt đối nhờ AI.</p><h2>Công Nghệ Lõi</h2><ul><li>Liveness Detection: Chống giả mạo khuôn mặt (Face Spoofing).</li><li>OCR: Tự động đọc dữ liệu từ giấy tờ tùy thân.</li><li>Fraud Detection: Chặn giao dịch đáng ngờ tức thì.</li></ul>` },
+            { id: 6, title: "6. CÁ NHÂN HÓA", img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80", content: `<h2>Trải Nghiệm May Đo</h2><p>AI phân tích dữ liệu lớn để cung cấp dịch vụ phù hợp riêng cho từng cá nhân (Hyper-personalization).</p><h2>Ví Dụ</h2><ul><li>Gợi ý thẻ tín dụng dựa trên thói quen mua sắm.</li><li>Cảnh báo chi tiêu vượt hạn mức.</li><li>Chúc mừng sinh nhật kèm ưu đãi riêng.</li></ul>` },
+            { id: 7, title: "7. TỰ ĐỘNG HÓA", img: "https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&w=1000&q=80", content: `<h2>Hậu Phương Vững Chắc</h2><p>RPA (Robotic Process Automation) là các robot phần mềm làm việc âm thầm phía sau để hỗ trợ Chatbot.</p><h2>Quy Trình</h2><ul><li>Chatbot nhận lệnh khóa thẻ.</li><li>RPA truy cập Core Banking thực hiện lệnh.</li><li>Chatbot báo kết quả cho khách.</li></ul>` },
+            { id: 8, title: "8. MÔ HÌNH LAI", img: "https://images.unsplash.com/photo-1535378437327-1e855d487340?auto=format&fit=crop&w=1000&q=80", content: `<h2>AI + Con Người</h2><p>AI không thay thế hoàn toàn con người. Mô hình hiệu quả nhất là sự phối hợp nhịp nhàng (Human-in-the-loop).</p><h2>Phân Công</h2><ul><li>AI: Xử lý 80% tác vụ lặp lại, thường quy.</li><li>Con người: Xử lý 20% ca khó, đòi hỏi sự thấu cảm và linh hoạt cao.</li></ul>` },
+            { id: 9, title: "9. KẾT LUẬN", img: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1000&q=80", content: `<h2>Tương Lai Của Fintech</h2><p>Ngân hàng trong tương lai sẽ "vô hình" (Invisible Banking), tích hợp sâu vào cuộc sống hàng ngày.</p><h2>Tầm Nhìn</h2><ul><li>Tài chính tự hành (Autonomous Finance).</li><li>Bảo mật lượng tử.</li><li>Trải nghiệm siêu cá nhân hóa theo thời gian thực.</li></ul>` }
         ];
 
-        let importedFilesData = []; 
+        let importedFilesData = [];
+        let selectedDocFile = null;
+        let selectedImgFile = null;
 
-        const botBrain = {
-            "xin chào": "Chào bạn! Chào mừng đến với Huy's Nexus. Tôi có thể giúp gì cho bạn hôm nay?",
-            "hi": "Hi! Rất vui được gặp bạn tại Huy's Nexus. Cần mình hỗ trợ gì không?",
-            "huy": "Huy là nhà phát triển chính, kiến trúc sư của hệ thống Nexus.",
-            "nexus": "Huy's Nexus là một hệ sinh thái số tích hợp công nghệ AI tiên tiến để hỗ trợ người dùng.",
-            "lãi suất": "Lãi suất tiết kiệm hiện tại đang ở mức hấp dẫn: 6.8%/năm cho kỳ hạn 12 tháng. Bạn có muốn xem bảng lãi suất chi tiết không?",
-            "thẻ tín dụng": "Chúng tôi có các dòng thẻ: Classic, Gold và Platinum. Hoàn tiền tới 10% cho mọi chi tiêu.",
-            "vay": "Chúng tôi cung cấp gói vay tiêu dùng lãi suất từ 0.8%/tháng và vay mua nhà từ 7.5%/năm.",
-            "ekyc": "Quy trình eKYC giúp bạn mở tài khoản 100% online chỉ trong 2 phút bằng CMND/CCCD và xác thực khuôn mặt.",
-            "bảo mật": "Hệ thống Nexus sử dụng mã hóa 256-bit và xác thực sinh trắc học để đảm bảo an toàn tuyệt đối.",
-            "số dư": "Để tra cứu số dư, vui lòng đăng nhập vào ứng dụng Banking và chọn mục 'Tài khoản'.",
-            "chuyển tiền": "Dịch vụ chuyển tiền nhanh 24/7 miễn phí trọn đời cho mọi giao dịch trong và ngoài hệ thống.",
-            "phí": "Huy's Nexus cam kết 'Zero Fee': Miễn phí chuyển khoản, miễn phí duy trì tài khoản.",
-            "quên mật khẩu": "Đừng lo, bạn có thể chọn 'Quên mật khẩu' ở màn hình đăng nhập và xác thực qua SMS OTP để cấp lại.",
-            "tỷ giá": "Tỷ giá hôm nay: USD/VND = 24,550. EUR/VND = 26,200. Bạn cần đổi ngoại tệ nào?",
-            "tiết kiệm": "Gửi tiết kiệm online được cộng thêm 0.2% lãi suất so với tại quầy. Kỳ hạn linh hoạt từ 1 tuần đến 36 tháng.",
-            "gian lận": "Nếu nghi ngờ gian lận, hãy khóa thẻ ngay trên App và gọi Hotline khẩn cấp 1900-6767-6969.",
-            "đầu tư": "Robo-Advisor của chúng tôi có thể giúp bạn đầu tư vào quỹ mở và trái phiếu chỉ từ 50.000đ.",
-            "liên hệ": "Thông tin liên hệ:<br>• Hotline: 1900-6767-6969<br>• Email: hulareous@gmail.com<br>• Facebook: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>",
-            "hotline": "Hotline 24/7 của chúng tôi là: 1900-6767-6969.",
-            "sđt": "Số điện thoại tổng đài: 1900-6767-6969.",
-            "gọi": "Bạn có thể gọi ngay cho chúng tôi qua số 1900-6767-6969.",
-            "email": "Bạn có thể gửi yêu cầu về địa chỉ email: hulareous@gmail.com.",
-            "gmail": "Email hỗ trợ: hulareous@gmail.com.",
-            "mail": "Vui lòng gửi mail về hulareous@gmail.com.",
-            "địa chỉ": "Văn phòng chính tại TP.HCM. Để biết vị trí chính xác, vui lòng liên hệ qua: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>",
-            "facebook": "Kết nối với Huy qua: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>",
-            "fb": "Facebook chính chủ: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>",
-            "mxh": "Mạng xã hội chính thức: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>",
-            "tuyển dụng": "Thông tin tuyển dụng được cập nhật thường xuyên tại: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>",
-            "cá nhân": "Thông tin cá nhân và cập nhật mới nhất có tại: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>"
-        };
-
-        const fallbackResponse = "Xin lỗi, hiện tại Huy's Assistant chưa có dữ liệu về vấn đề này. Bạn có thể thử các từ khóa như: Facebook, Email, Hotline, hoặc Lãi suất.";
-
+        /* --- INIT --- */
         function init() {
-            const grid = document.getElementById('tileGrid');
-            topics.forEach((t) => {
-                const tile = document.createElement('div');
-                tile.className = 'tile'; tile.id = `tile-${t.id}`; 
-                tile.innerHTML = `<div class="tile-title">${t.title}</div>`;
-                tile.onclick = (e) => openTopicTab(t, tile);
-                grid.appendChild(tile);
-            });
+            renderGrid();
             document.addEventListener('keydown', handleGlobalKeys);
             updateFloatingBar();
             initChat();
+            initDraggableChat();
         }
 
-        function handleSearchInput(e) {
-            const keyword = e.target.value.toLowerCase().trim();
-            const canvas = document.getElementById('searchCanvas');
-            if (e.key === 'Enter') {
-                if (keyword.length < 2) { canvas.classList.remove('active'); return; }
-                performDeepSearch(keyword); return;
+        /* --- GRID --- */
+        function renderGrid() {
+            const grid = document.getElementById('tileGrid');
+            grid.innerHTML = '';
+            const visibleTopics = topics.slice(0, 9);
+            visibleTopics.forEach((t) => {
+                const tile = document.createElement('div');
+                tile.className = 'tile'; tile.id = `tile-${t.id}`; 
+                tile.innerHTML = `<div class="tile-title">${t.title}</div>`;
+                tile.onclick = (e) => { if(document.getElementById('draggableChat').style.transition === 'none') return; openTopicTab(t, tile); };
+                grid.appendChild(tile);
+            });
+            const plusTile = document.createElement('div');
+            plusTile.className = 'tile plus-tile';
+            plusTile.innerHTML = `<div class="plus-icon">+</div>`;
+            plusTile.title = "Thêm nội dung mới";
+            plusTile.onclick = openImportModal; 
+            grid.appendChild(plusTile);
+        }
+
+        /* --- IMPORT MODAL --- */
+        function openImportModal() {
+            document.getElementById('imgToggle').checked = true;
+            toggleImageUpload(document.getElementById('imgToggle'));
+            document.getElementById('previewImg').style.display = 'none';
+            document.getElementById('fileNameDisplay').innerText = '';
+            document.getElementById('imageUploadInput').value = '';
+            document.getElementById('fileUploadInput').value = '';
+            selectedDocFile = null; selectedImgFile = null;
+            document.getElementById('importModal').classList.add('active');
+        }
+        function closeImportModal() { document.getElementById('importModal').classList.remove('active'); }
+        function toggleImageUpload(checkbox) {
+            const zone = document.getElementById('imgZone');
+            if (checkbox.checked) zone.classList.remove('disabled');
+            else { zone.classList.add('disabled'); selectedImgFile = null; }
+        }
+        function handleImageSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => { selectedImgFile = e.target.result; const prev = document.getElementById('previewImg'); prev.src = selectedImgFile; prev.style.display = 'block'; };
+                reader.readAsDataURL(file);
             }
-            canvas.classList.remove('active');
         }
-
-        function performDeepSearch(keyword) {
-            const canvas = document.getElementById('searchCanvas'); canvas.innerHTML = ''; let resultsFound = 0;
-            const createSnippet = (text, query) => {
-                const lowerText = text.toLowerCase(); const idx = lowerText.indexOf(query); if (idx === -1) return null;
-                const start = Math.max(0, idx - 50); const end = Math.min(text.length, idx + query.length + 50);
-                let snippet = text.substring(start, end); const regex = new RegExp(`(${query})`, 'gi');
-                return "..." + snippet.replace(regex, '<span class="highlight">$1</span>') + "...";
-            };
-            const renderResult = (title, snippet, onClickFunc) => {
-                const div = document.createElement('div'); div.className = 'search-result-item';
-                div.innerHTML = `<div class="res-location">LOCATION: ${title}</div><div class="res-snippet">${snippet}</div>`;
-                div.onclick = onClickFunc; canvas.appendChild(div); resultsFound++;
-            };
-            topics.forEach(topic => {
-                const plainText = topic.content.replace(/<[^>]*>/g, ' '); const snippet = createSnippet(plainText, keyword);
-                if (snippet) { renderResult(topic.title, snippet, () => { const tile = document.getElementById(`tile-${topic.id}`); openTopicTab(topic, tile); canvas.classList.remove('active'); }); }
-            });
-            importedFilesData.forEach(file => {
-                const snippet = createSnippet(file.content, keyword);
-                if (snippet) { renderResult(file.title, snippet, () => { openImportedTabContent(file.title, file.contentHTML); canvas.classList.remove('active'); }); }
-            });
-            if (resultsFound === 0) canvas.innerHTML = '<div class="no-result">Không tìm thấy dữ liệu.</div>';
-            canvas.classList.add('active');
+        function handleDocSelect(input) {
+            selectedDocFile = input.files[0];
+            if (selectedDocFile) document.getElementById('fileNameDisplay').innerText = selectedDocFile.name;
         }
-
-        function triggerImport() { document.getElementById('fileInput').click(); }
-        function processFile(input) {
-            const file = input.files[0]; if(!file) return;
-            const handleContent = (plainText, htmlContent) => { importedFilesData.push({ title: file.name, content: plainText, contentHTML: htmlContent }); openImportedTabContent(file.name, htmlContent); };
+        function confirmImport() {
+            if (!selectedDocFile) { alert("Vui lòng chọn file tài liệu!"); return; }
+            const file = selectedDocFile;
+            const useImage = document.getElementById('imgToggle').checked;
+            const finalImg = useImage && selectedImgFile ? selectedImgFile : null;
+            const finishImport = (plainText, rawHtml) => {
+                let formattedHtml = rawHtml;
+                if (!rawHtml.includes('<h2>')) formattedHtml = `<h2>1. Tổng quan - ${file.name}</h2>${rawHtml}`;
+                const title = file.name.replace(/\.[^/.]+$/, "").toUpperCase();
+                importedFilesData.push({ title: title, content: plainText, contentHTML: formattedHtml });
+                const newTopic = { id: Date.now(), title: title, img: finalImg, content: formattedHtml };
+                topics.unshift(newTopic);
+                renderGrid(); openTopicTab(newTopic); closeImportModal();
+            };
             if (file.name.endsWith('.docx')) {
-                const reader = new FileReader(); reader.onload = e => mammoth.convertToHtml({arrayBuffer: e.target.result}).then(r => { const tempDiv = document.createElement('div'); tempDiv.innerHTML = r.value; handleContent(tempDiv.innerText, r.value); }); reader.readAsArrayBuffer(file);
+                const reader = new FileReader(); reader.onload = e => mammoth.convertToHtml({arrayBuffer: e.target.result}).then(r => { const tempDiv = document.createElement('div'); tempDiv.innerHTML = r.value; finishImport(tempDiv.innerText, r.value); }); reader.readAsArrayBuffer(file);
             } else {
-                const reader = new FileReader(); reader.onload = e => { const text = e.target.result; const html = text.split('\n').map(l=>`<p>${l}</p>`).join(''); handleContent(text, html); }; reader.readAsText(file, 'UTF-8');
+                const reader = new FileReader(); reader.onload = e => { const text = e.target.result; const html = text.split('\n').map(l=>`<p>${l}</p>`).join(''); finishImport(text, html); }; reader.readAsText(file, 'UTF-8');
             }
-            input.value = '';
-        }
-        function openImportedTabContent(title, htmlContent) {
-            const tabId = `import-${Date.now()}`; const btn = createNewTabElement(tabId, title); document.getElementById('tabList').appendChild(btn);
-            const panel = document.createElement('div'); panel.className = 'view-panel'; panel.id = tabId; panel.innerHTML = `<div class="doc-layout"><div class="doc-header"><h1 class="doc-title">${title}</h1></div><div class="doc-content">${htmlContent}</div></div>`;
-            document.getElementById('viewport').appendChild(panel); switchTab(tabId);
         }
 
-        function updateFloatingBar() {
-            const tabs = Array.from(document.querySelectorAll('.tab')); const bar = document.getElementById('floatingBar'); bar.innerHTML = '';
-            const btnA = document.createElement('div'); btnA.className = 'f-item f-action a-btn'; btnA.innerText = 'A'; btnA.onclick = triggerAllTabs; bar.appendChild(btnA);
-            const total = tabs.length - 1;
-            if (total > 0) {
-                const act = tabs.findIndex(t => t.classList.contains('active'));
-                const mkBtn = (i) => { const b=document.createElement('div'); b.className='f-item'; if(act===i)b.classList.add('current'); b.innerText=i; b.onclick=()=>tabs[i].click(); bar.appendChild(b); };
-                const mkDot = () => { const d=document.createElement('div'); d.className='f-dots'; d.innerText='...'; bar.appendChild(d); };
-                if (act === 0) { if (total <= 4) { for(let i=1;i<=total;i++) mkBtn(i); } else { mkBtn(1); mkBtn(2); mkBtn(3); mkDot(); mkBtn(total); } }
-                else { mkBtn(1); if(act>2) mkDot(); if(act!==1 && act!==total) mkBtn(act); if(act<total-1) mkDot(); if(total>1) mkBtn(total); }
-            }
-            const btnDA = document.createElement('div'); btnDA.className = 'f-item f-action da-btn'; btnDA.innerText = 'DA'; btnDA.onclick = closeAllTabs; bar.appendChild(btnDA);
-        }
-        function triggerAllTabs() { document.getElementById('searchBox').value = ''; topics.forEach((topic, index) => { const tile = document.getElementById(`tile-${topic.id}`); if (tile) { setTimeout(() => { openTopicTab(topic, tile, true); }, index * 200); } }); }
-        function closeAllTabs() { const tabs = document.querySelectorAll('.tab'); tabs.forEach(tab => { if (tab.dataset.target !== 'home-view') { document.getElementById(tab.dataset.target)?.remove(); tab.remove(); } }); switchTab('home-view'); }
-        
-        function animateTileToTab(tileElement, tabElement, onComplete) {
-            const startRect = tileElement.getBoundingClientRect(); const endRect = tabElement.getBoundingClientRect();
-            const ghost = document.createElement('div'); ghost.className = 'morph-ghost'; ghost.innerHTML = tileElement.innerHTML; 
-            ghost.style.left = startRect.left + 'px'; ghost.style.top = startRect.top + 'px'; ghost.style.width = startRect.width + 'px'; ghost.style.height = startRect.height + 'px';
-            ghost.style.fontFamily = "'Space Grotesk', sans-serif"; ghost.style.fontWeight = "700"; ghost.style.textTransform = "uppercase"; ghost.style.color = "#fff"; ghost.style.fontSize = "1rem";
-            document.body.appendChild(ghost);
-            requestAnimationFrame(() => { ghost.style.left = endRect.left + 'px'; ghost.style.top = endRect.top + 'px'; ghost.style.width = endRect.width + 'px'; ghost.style.height = endRect.height + 'px'; ghost.style.opacity = '0.5'; ghost.style.fontSize = "0.8rem"; });
-            setTimeout(() => { ghost.remove(); if (onComplete) onComplete(); }, 600);
-        }
-
-        /* --- UPDATED: IMAGE FALLBACK IN OPEN TOPIC TAB --- */
+        /* --- COMPACT SPLIT TAB --- */
         function openTopicTab(topic, tileElement, stayOnHome = false) {
-            const tabId = `topic-${topic.id}`; if(document.getElementById(tabId)) { if (!stayOnHome) switchTab(tabId); return; }
-            
-            // Added onerror fallback to a reliable placeholder
-            const html = `
-                <div class="doc-layout">
-                    <div class="doc-header"><h1 class="doc-title">${topic.title}</h1></div>
-                    <img src="${topic.img}" class="doc-image" onerror="this.src='https://placehold.co/1000x350/2c2c2c/ffffff?text=Image+Unavailable'">
-                    <div class="doc-content">${topic.content}</div>
-                </div>`;
-            
+            const tabId = `topic-${topic.id}`; 
+            if(document.getElementById(tabId)) { if (!stayOnHome) switchTab(tabId); return; }
+            let html = '';
+            if (topic.img) {
+                html = `
+                    <div class="doc-layout">
+                        <div class="doc-visual"><img src="${topic.img}" class="doc-image" onerror="this.style.display='none'"></div>
+                        <div class="doc-content-box">
+                            <div class="doc-header"><h1 class="doc-title">${topic.title}</h1></div>
+                            <div class="doc-body">${topic.content}</div>
+                        </div>
+                    </div>`;
+            } else {
+                html = `
+                    <div class="doc-layout no-image">
+                        <div class="doc-content-box" style="text-align:center; padding: 80px;">
+                            <div class="doc-header"><h1 class="doc-title">${topic.title}</h1></div>
+                            <div class="doc-body" style="text-align:left; max-width:800px; margin:0 auto;">${topic.content}</div>
+                        </div>
+                    </div>`;
+            }
             const tabBtn = createNewTabElement(tabId, topic.title); tabBtn.classList.add('invisible-waiting'); document.getElementById('tabList').appendChild(tabBtn);
             const panel = document.createElement('div'); panel.className = 'view-panel'; panel.id = tabId; panel.innerHTML = html; document.getElementById('viewport').appendChild(panel);
             tabBtn.scrollIntoView({behavior: "auto", block: "nearest", inline: "end"}); updateFloatingBar();
             if (tileElement) { animateTileToTab(tileElement, tabBtn, () => { tabBtn.classList.remove('invisible-waiting'); if (!stayOnHome) switchTab(tabId); }); } else { tabBtn.classList.remove('invisible-waiting'); if (!stayOnHome) switchTab(tabId); }
         }
 
+        /* --- COMMON --- */
+        function handleSearchInput(e) { const keyword = e.target.value.toLowerCase().trim(); const canvas = document.getElementById('searchCanvas'); if (e.key === 'Enter') { if (keyword.length < 2) { canvas.classList.remove('active'); return; } performDeepSearch(keyword); return; } canvas.classList.remove('active'); }
+        function performDeepSearch(keyword) { const canvas = document.getElementById('searchCanvas'); canvas.innerHTML = ''; let resultsFound = 0; const createSnippet = (text, query) => { const lowerText = text.toLowerCase(); const idx = lowerText.indexOf(query); if (idx === -1) return null; const start = Math.max(0, idx - 50); const end = Math.min(text.length, idx + query.length + 50); let snippet = text.substring(start, end); const regex = new RegExp(`(${query})`, 'gi'); return "..." + snippet.replace(regex, '<span class="highlight">$1</span>') + "..."; }; const renderResult = (title, snippet, onClickFunc) => { const div = document.createElement('div'); div.className = 'search-result-item'; div.innerHTML = `<div class="res-location">LOCATION: ${title}</div><div class="res-snippet">${snippet}</div>`; div.onclick = onClickFunc; canvas.appendChild(div); resultsFound++; }; topics.forEach(topic => { const plainText = topic.content.replace(/<[^>]*>/g, ' '); const snippet = createSnippet(plainText, keyword); if (snippet) { renderResult(topic.title, snippet, () => { openTopicTab(topic); canvas.classList.remove('active'); }); } }); importedFilesData.forEach(file => { const snippet = createSnippet(file.content, keyword); if (snippet) { renderResult(file.title, snippet, () => { openImportedTabContent(file.title, file.contentHTML); canvas.classList.remove('active'); }); } }); if (resultsFound === 0) canvas.innerHTML = '<div class="no-result">Không tìm thấy dữ liệu.</div>'; canvas.classList.add('active'); }
+        function openImportedTabContent(title, htmlContent) { const tabId = `import-${Date.now()}`; const btn = createNewTabElement(tabId, title); document.getElementById('tabList').appendChild(btn); const panel = document.createElement('div'); panel.className = 'view-panel'; panel.id = tabId; panel.innerHTML = `<div class="doc-layout no-image"><div class="doc-content-box"><div class="doc-header"><h1 class="doc-title">${title}</h1></div><div class="doc-body">${htmlContent}</div></div></div>`; document.getElementById('viewport').appendChild(panel); switchTab(tabId); }
+        function updateFloatingBar() { const tabs = Array.from(document.querySelectorAll('.tab')); const bar = document.getElementById('floatingBar'); bar.innerHTML = ''; const btnA = document.createElement('div'); btnA.className = 'f-item f-action a-btn'; btnA.innerText = 'A'; btnA.onclick = triggerAllTabs; bar.appendChild(btnA); const total = tabs.length - 1; if (total > 0) { const act = tabs.findIndex(t => t.classList.contains('active')); const mkBtn = (i) => { const b=document.createElement('div'); b.className='f-item'; if(act===i)b.classList.add('current'); b.innerText=i; b.onclick=()=>tabs[i].click(); bar.appendChild(b); }; const mkDot = () => { const d=document.createElement('div'); d.className='f-dots'; d.innerText='...'; bar.appendChild(d); }; if (act === 0) { if (total <= 3) { for(let i=1;i<=total;i++) mkBtn(i); } else { mkBtn(1); mkBtn(2); mkDot(); mkBtn(total); } } else { mkBtn(1); if(act>2) mkDot(); if(act!==1 && act!==total) mkBtn(act); if(act<total-1) mkDot(); if(total>1) mkBtn(total); } } const btnDA = document.createElement('div'); btnDA.className = 'f-item f-action da-btn'; btnDA.innerText = 'DA'; btnDA.ondblclick = () => { if(confirm("Xác nhận xóa sạch dữ liệu?")) { closeAllTabs(); topics = []; renderGrid(); alert("Đã reset."); } }; btnDA.onclick = closeAllTabs; bar.appendChild(btnDA); }
+        function triggerAllTabs() { document.getElementById('searchBox').value = ''; topics.forEach((topic, index) => { const tile = document.getElementById(`tile-${topic.id}`); if (tile) { setTimeout(() => { openTopicTab(topic, tile, true); }, index * 200); } }); }
+        function closeAllTabs() { const tabs = document.querySelectorAll('.tab'); tabs.forEach(tab => { if (tab.dataset.target !== 'home-view') { document.getElementById(tab.dataset.target)?.remove(); tab.remove(); } }); switchTab('home-view'); }
+        function animateTileToTab(tileElement, tabElement, onComplete) { const startRect = tileElement.getBoundingClientRect(); const endRect = tabElement.getBoundingClientRect(); const ghost = document.createElement('div'); ghost.className = 'morph-ghost'; ghost.innerHTML = tileElement.innerHTML; ghost.style.left = startRect.left + 'px'; ghost.style.top = startRect.top + 'px'; ghost.style.width = startRect.width + 'px'; ghost.style.height = startRect.height + 'px'; ghost.style.fontFamily = "'Space Grotesk', sans-serif"; ghost.style.fontWeight = "700"; ghost.style.textTransform = "uppercase"; ghost.style.color = "#fff"; ghost.style.fontSize = "1rem"; document.body.appendChild(ghost); requestAnimationFrame(() => { ghost.style.left = endRect.left + 'px'; ghost.style.top = endRect.top + 'px'; ghost.style.width = endRect.width + 'px'; ghost.style.height = endRect.height + 'px'; ghost.style.opacity = '0.5'; ghost.style.fontSize = "0.8rem"; }); setTimeout(() => { ghost.remove(); if (onComplete) onComplete(); }, 600); }
         function createNewTabElement(id, title) { const tabBtn = document.createElement('div'); tabBtn.className = 'tab'; tabBtn.dataset.target = id; tabBtn.innerHTML = `<span title="${title}">${title}</span><div class="tab-close" onclick="closeTab('${id}', event)">✕</div>`; tabBtn.onclick = () => switchTab(id); return tabBtn; }
         function switchTab(id) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active')); const t = document.querySelector(`.tab[data-target="${id}"]`); const p = document.getElementById(id); if(t && p) { t.classList.add('active'); p.classList.add('active'); t.scrollIntoView({behavior:'smooth', inline:'center'}); updateFloatingBar(); } }
         function closeTab(id, e) { if(e) e.stopPropagation(); const t = document.querySelector(`.tab[data-target="${id}"]`); const p = document.getElementById(id); if(t.classList.contains('active')) switchTab('home-view'); t.remove(); p.remove(); updateFloatingBar(); }
         function handleGlobalKeys(e) { const activeTag = document.activeElement.tagName; if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return; const tabs = Array.from(document.querySelectorAll('.tab')); if (!tabs.length) return; const activeIndex = tabs.findIndex(t => t.classList.contains('active')); if (activeIndex === -1) return; if (e.key === 'ArrowRight') tabs[(activeIndex + 1) % tabs.length].click(); else if (e.key === 'ArrowLeft') tabs[(activeIndex - 1 + tabs.length) % tabs.length].click(); else if (e.key === 'Backspace') { const targetId = tabs[activeIndex].dataset.target; if (targetId !== 'home-view') closeTab(targetId, null); } }
-
-        function toggleChat() { document.getElementById('chatWindow').classList.toggle('open'); }
-        
-        function initChat() {
-            const body = document.getElementById('chatBody');
-            const indicator = document.getElementById('typingIndicator');
-            while(body.firstChild && body.firstChild !== indicator) body.removeChild(body.firstChild);
-            addBotMessage("Chào bạn! Tôi là Huy's Assistant. Tôi có thể hỗ trợ thông tin gì cho bạn?");
-            
-            const suggestions = document.createElement('div');
-            suggestions.className = 'suggestions';
-            const keys = ["Liên hệ", "Facebook", "Lãi suất", "Thẻ tín dụng", "Email"];
-            keys.forEach(k => {
-                const chip = document.createElement('div'); chip.className = 'chip'; chip.innerText = k;
-                chip.onclick = () => { document.getElementById('chatInput').value = k; sendMsg(); };
-                suggestions.appendChild(chip);
-            });
-            body.insertBefore(suggestions, indicator);
-        }
-
-        function sendMsg() {
-            const inp = document.getElementById('chatInput'); const txt = inp.value.trim(); if(!txt) return;
-            addUserMessage(txt); inp.value = ''; processBotReply(txt);
-        }
-
-        function addUserMessage(text) {
-            const body = document.getElementById('chatBody'); const indicator = document.getElementById('typingIndicator');
-            const div = document.createElement('div'); div.className = 'msg user'; div.innerText = text;
-            body.insertBefore(div, indicator); body.scrollTop = body.scrollHeight;
-        }
-
-        function addBotMessage(text) {
-            const body = document.getElementById('chatBody'); const indicator = document.getElementById('typingIndicator');
-            const div = document.createElement('div'); div.className = 'msg bot'; 
-            div.innerHTML = text; 
-            body.insertBefore(div, indicator); body.scrollTop = body.scrollHeight;
-        }
-
-        function processBotReply(userText) {
-            const indicator = document.getElementById('typingIndicator');
-            indicator.style.display = 'flex'; const body = document.getElementById('chatBody'); body.scrollTop = body.scrollHeight;
-            
-            const lowerText = userText.toLowerCase();
-            const weakKeys = ['huy', 'nexus', 'xin chào', 'hi', 'chào', 'bạn ơi', 'ad', 'admin'];
-            
-            let foundKeywords = [];
-            for (let key in botBrain) {
-                const idx = lowerText.indexOf(key);
-                if (idx !== -1) {
-                    foundKeywords.push({ key: key, index: idx, isWeak: weakKeys.includes(key), content: botBrain[key] });
-                }
-            }
-            foundKeywords.sort((a, b) => a.index - b.index);
-
-            const hasStrongKey = foundKeywords.some(item => !item.isWeak);
-            let finalKeywords = hasStrongKey ? foundKeywords.filter(item => !item.isWeak) : foundKeywords;
-
-            let uniqueReplies = [];
-            let seenContent = new Set();
-            finalKeywords.forEach(item => {
-                if (!seenContent.has(item.content)) { uniqueReplies.push(item.content); seenContent.add(item.content); }
-            });
-
-            setTimeout(() => {
-                indicator.style.display = 'none';
-                if (uniqueReplies.length > 0) {
-                    uniqueReplies.forEach((reply, index) => { setTimeout(() => { addBotMessage(reply); }, index * 600); });
-                } else {
-                    addBotMessage(fallbackResponse);
-                }
-            }, 1000);
-        }
+        function initDraggableChat() { const widget = document.getElementById('draggableChat'); const btn = document.getElementById('chatBtn'); let isDragging = false; let startX, startY, initialLeft, initialTop; let hasMoved = false; const updateChatOrientation = () => { const chatWindow = document.getElementById('chatWindow'); if (!chatWindow) return; const rect = widget.getBoundingClientRect(); const winH = window.innerHeight; const winW = window.innerWidth; chatWindow.style.top = ''; chatWindow.style.bottom = ''; chatWindow.style.left = ''; chatWindow.style.right = ''; if (rect.top < winH / 2) { chatWindow.style.top = '80px'; chatWindow.style.bottom = 'auto'; chatWindow.style.transformOrigin = 'top right'; } else { chatWindow.style.bottom = '85px'; chatWindow.style.top = 'auto'; chatWindow.style.transformOrigin = 'bottom right'; } if (rect.left < winW / 2) { chatWindow.style.left = '0'; chatWindow.style.right = 'auto'; let currentOrigin = chatWindow.style.transformOrigin; chatWindow.style.transformOrigin = currentOrigin.replace('right', 'left'); } else { chatWindow.style.right = '0'; chatWindow.style.left = 'auto'; } }; const startDrag = (e) => { if (e.target.closest('.chat-window')) return; isDragging = true; hasMoved = false; const clientX = e.clientX || e.touches[0].clientX; const clientY = e.clientY || e.touches[0].clientY; startX = clientX; startY = clientY; const rect = widget.getBoundingClientRect(); initialLeft = rect.left; initialTop = rect.top; widget.style.transition = 'none'; if(e.type === 'touchstart') e.preventDefault(); }; const doDrag = (e) => { if (!isDragging) return; const clientX = e.clientX || e.touches[0].clientX; const clientY = e.clientY || e.touches[0].clientY; const dx = clientX - startX; const dy = clientY - startY; if (Math.abs(dx) > 5 || Math.abs(dy) > 5) hasMoved = true; widget.style.left = `${initialLeft + dx}px`; widget.style.top = `${initialTop + dy}px`; widget.style.bottom = 'auto'; widget.style.right = 'auto'; }; const stopDrag = () => { if (!isDragging) return; isDragging = false; const rect = widget.getBoundingClientRect(); const winWidth = window.innerWidth; const winHeight = window.innerHeight; widget.style.transition = 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)'; const distBottom = winHeight - (rect.top + rect.height); if (distBottom < 100) widget.style.top = `${winHeight - rect.height - 20}px`; else { if (rect.left < (winWidth - (rect.left + rect.width))) widget.style.left = '20px'; else widget.style.left = `${winWidth - rect.width - 20}px`; } setTimeout(updateChatOrientation, 400); if (!hasMoved) { toggleChat(); updateChatOrientation(); } }; btn.addEventListener('mousedown', startDrag); document.addEventListener('mousemove', doDrag); document.addEventListener('mouseup', stopDrag); btn.addEventListener('touchstart', startDrag, {passive: false}); document.addEventListener('touchmove', doDrag, {passive: false}); document.addEventListener('touchend', stopDrag); }
+        function toggleChat() { const widget = document.getElementById('draggableChat'); if (widget.style.cursor === 'grabbing') return; document.getElementById('chatWindow').classList.toggle('open'); }
+        function initChat() { const body = document.getElementById('chatBody'); const indicator = document.getElementById('typingIndicator'); while(body.firstChild && body.firstChild !== indicator) body.removeChild(body.firstChild); addBotMessage("Chào bạn! Tôi là Huy's Assistant. Tôi có thể hỗ trợ thông tin gì cho bạn?"); const suggestions = document.createElement('div'); suggestions.className = 'suggestions'; const keys = ["Liên hệ", "Facebook", "Lãi suất", "Thẻ tín dụng", "Email"]; keys.forEach(k => { const chip = document.createElement('div'); chip.className = 'chip'; chip.innerText = k; chip.onclick = () => { document.getElementById('chatInput').value = k; sendMsg(); }; suggestions.appendChild(chip); }); body.insertBefore(suggestions, indicator); }
+        function sendMsg() { const inp = document.getElementById('chatInput'); const txt = inp.value.trim(); if(!txt) return; addUserMessage(txt); inp.value = ''; processBotReply(txt); }
+        function addUserMessage(text) { const body = document.getElementById('chatBody'); const indicator = document.getElementById('typingIndicator'); const div = document.createElement('div'); div.className = 'msg user'; div.innerText = text; body.insertBefore(div, indicator); body.scrollTop = body.scrollHeight; }
+        function addBotMessage(text) { const body = document.getElementById('chatBody'); const indicator = document.getElementById('typingIndicator'); const div = document.createElement('div'); div.className = 'msg bot'; div.innerHTML = text; body.insertBefore(div, indicator); body.scrollTop = body.scrollHeight; }
+        const botBrain = { "xin chào": "Chào bạn! Chào mừng đến với Huy's Nexus.", "hi": "Hi! Rất vui được gặp bạn.", "huy": "Huy là nhà phát triển chính.", "nexus": "Huy's Nexus là một hệ sinh thái số.", "lãi suất": "Lãi suất tiết kiệm: 6.8%/năm.", "thẻ tín dụng": "Thẻ Classic, Gold, Platinum.", "vay": "Vay tiêu dùng 0.8%/tháng.", "ekyc": "eKYC mở tài khoản 2 phút.", "bảo mật": "Mã hóa 256-bit.", "số dư": "Tra cứu trên App.", "chuyển tiền": "Miễn phí 24/7.", "phí": "Zero Fee.", "quên mật khẩu": "Lấy lại qua SMS OTP.", "tỷ giá": "USD/VND = 24,550.", "tiết kiệm": "Gửi online +0.2%.", "gian lận": "Khóa thẻ ngay trên App.", "đầu tư": "Robo-Advisor đầu tư từ 50k.", "liên hệ": "Hotline: 1900-6767-6969. Email: hulareous@gmail.com", "hotline": "Hotline: 1900-6767-6969.", "sđt": "SĐT: 1900-6767-6969.", "gọi": "Gọi 1900-6767-6969.", "email": "Email: hulareous@gmail.com.", "gmail": "Email: hulareous@gmail.com.", "mail": "Email: hulareous@gmail.com.", "địa chỉ": "VP: TP.HCM.", "facebook": "FB: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>", "fb": "FB: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>", "mxh": "FB: <a href='https://www.facebook.com/hulareous' target='_blank'>Huy's Facebook</a>", "tuyển dụng": "Xem tại FB.", "cá nhân": "Xem tại FB." };
+        const fallbackResponse = "Xin lỗi, tôi chưa hiểu ý bạn. Thử: Facebook, Email, Hotline...";
+        function processBotReply(userText) { const indicator = document.getElementById('typingIndicator'); indicator.style.display = 'flex'; const body = document.getElementById('chatBody'); body.scrollTop = body.scrollHeight; const lowerText = userText.toLowerCase(); const weakKeys = ['huy', 'nexus', 'xin chào', 'hi', 'chào', 'bạn ơi', 'ad', 'admin']; let foundKeywords = []; for (let key in botBrain) { const idx = lowerText.indexOf(key); if (idx !== -1) foundKeywords.push({ key: key, index: idx, isWeak: weakKeys.includes(key), content: botBrain[key] }); } foundKeywords.sort((a, b) => a.index - b.index); const hasStrongKey = foundKeywords.some(item => !item.isWeak); let finalKeywords = hasStrongKey ? foundKeywords.filter(item => !item.isWeak) : foundKeywords; let uniqueReplies = []; let seenContent = new Set(); finalKeywords.forEach(item => { if (!seenContent.has(item.content)) { uniqueReplies.push(item.content); seenContent.add(item.content); } }); setTimeout(() => { indicator.style.display = 'none'; if (uniqueReplies.length > 0) uniqueReplies.forEach((reply, index) => { setTimeout(() => { addBotMessage(reply); }, index * 600); }); else addBotMessage(fallbackResponse); }, 1000); }
 
         init();
     </script>
